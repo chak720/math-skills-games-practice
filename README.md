@@ -17,6 +17,8 @@ npm run preview      # serve dist/ locally
 
 `npm run build` produces one self-contained file, `dist/index.html` (about 1.3 MB). Scripts, styles, fonts and the Web Workers are all inlined, so you can double-click it to open it straight from disk, copy it anywhere, or put it on any static host. (Browsers refuse to load separate script files from `file://` pages, which is why it is a single file.) Served over http(s), a small service worker (`dist/sw.js`) caches the page, so it keeps working without a network after the first visit.
 
+**GitHub Pages:** `.github/workflows/pages.yml` builds the app and publishes it on every push. In the repository's Settings → Pages, set **Source** to **GitHub Actions**. With "Deploy from a branch" instead, Pages serves the source `index.html`, which is blank.
+
 Heavy work (bots, equity, blackjack EVs, puzzle generation) runs in Web Workers. If a browser will not start them, the same code runs on the main thread instead.
 
 ## What's inside
