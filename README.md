@@ -8,14 +8,16 @@ Requires Node 18 or newer.
 
 ```bash
 npm install          # .npmrc sets legacy-peer-deps
-npm run dev          # http://localhost:5173
+npm run dev          # http://localhost:5173 (open this URL; the repo's index.html is source, not the app)
 npm test             # the full Vitest suite
 npm run typecheck    # strict TypeScript
-npm run build        # type-check, then build static files into dist/
+npm run build        # type-check, then build dist/index.html
 npm run preview      # serve dist/ locally
 ```
 
-`dist/` is a plain static site with relative paths, so it can be served from any folder or host. In production builds a small service worker caches the app shell, so after the first visit it works with no network. Heavy work (bots, equity, blackjack EVs, puzzle generation) runs in Web Workers; if workers are unavailable (for example when opening `dist/index.html` straight from disk), the same code runs on the main thread instead.
+`npm run build` produces one self-contained file, `dist/index.html` (about 1.3 MB). Scripts, styles, fonts and the Web Workers are all inlined, so you can double-click it to open it straight from disk, copy it anywhere, or put it on any static host. (Browsers refuse to load separate script files from `file://` pages, which is why it is a single file.) Served over http(s), a small service worker (`dist/sw.js`) caches the page, so it keeps working without a network after the first visit.
+
+Heavy work (bots, equity, blackjack EVs, puzzle generation) runs in Web Workers. If a browser will not start them, the same code runs on the main thread instead.
 
 ## What's inside
 

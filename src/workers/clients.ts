@@ -1,40 +1,43 @@
 /**
- * One lazily-started worker per heavy domain. `new Worker(new URL(...))` must
- * appear literally here so Vite can bundle each worker.
+ * One lazily-started worker per heavy domain. Workers are inlined into the
+ * bundle (`?worker&inline`), so the built site is a single file that also runs
+ * when opened straight from disk. If a worker cannot start, each client runs
+ * the same API on the main thread instead.
  */
 import { WorkerClient } from './rpc';
+import FairnessWorker from './fairness.worker.ts?worker&inline';
+import BotsWorker from './bots.worker.ts?worker&inline';
+import EquityWorker from './equity.worker.ts?worker&inline';
+import BjWorker from './bj.worker.ts?worker&inline';
+import PuzzleWorker from './puzzle.worker.ts?worker&inline';
 import type { FairnessApi } from './fairnessApi';
+import type { BotsApi } from './botsApi';
+import type { EquityApi } from './equityApi';
+import type { BjApi } from './bjApi';
+import type { PuzzleApi } from './puzzleApi';
 
 export const fairnessWorker = new WorkerClient<FairnessApi>(
-  () => new Worker(new URL('./fairness.worker.ts', import.meta.url), { type: 'module' }),
+  () => new FairnessWorker(),
   () => import('./fairnessApi').then((m) => m.fairnessApi),
 );
 
-import type { BotsApi } from './botsApi';
-
 /** Bots run in their own worker: they can only ever see the views we post them. */
 export const botsWorker = new WorkerClient<BotsApi>(
-  () => new Worker(new URL('./bots.worker.ts', import.meta.url), { type: 'module' }),
+  () => new BotsWorker(),
   () => import('./botsApi').then((m) => m.botsApi),
 );
 
-import type { EquityApi } from './equityApi';
-
 export const equityWorker = new WorkerClient<EquityApi>(
-  () => new Worker(new URL('./equity.worker.ts', import.meta.url), { type: 'module' }),
+  () => new EquityWorker(),
   () => import('./equityApi').then((m) => m.equityApi),
 );
 
-import type { BjApi } from './bjApi';
-
 export const bjWorker = new WorkerClient<BjApi>(
-  () => new Worker(new URL('./bj.worker.ts', import.meta.url), { type: 'module' }),
+  () => new BjWorker(),
   () => import('./bjApi').then((m) => m.bjApi),
 );
 
-import type { PuzzleApi } from './puzzleApi';
-
 export const puzzleWorker = new WorkerClient<PuzzleApi>(
-  () => new Worker(new URL('./puzzle.worker.ts', import.meta.url), { type: 'module' }),
+  () => new PuzzleWorker(),
   () => import('./puzzleApi').then((m) => m.puzzleApi),
 );

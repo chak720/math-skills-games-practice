@@ -64,7 +64,7 @@ export function TableView({ model, showBB, onSeatClick, compact }: { model: Tabl
   const rx = compact ? 40 : 44, ry = compact ? 41 : 39;
 
   return (
-    <div className={cx('relative w-full select-none', compact ? 'aspect-[3/4] mt-10' : 'aspect-[16/9] max-h-[640px] mt-4')}>
+    <div className={cx('relative w-full select-none', compact ? 'aspect-[3/4] mt-10 mb-10' : 'aspect-[16/9] max-h-[640px] mt-4 mb-12')}>
       {/* Rail and felt */}
       <div className="absolute inset-[6%_4%] rounded-[50%] bg-felt-rail shadow-[0_20px_60px_rgba(0,0,0,.55)]" />
       <div className="absolute inset-[8%_6%] rounded-[50%] felt shadow-[inset_0_0_0_2px_rgba(255,255,255,.04),inset_0_10px_60px_rgba(0,0,0,.45)]" />
