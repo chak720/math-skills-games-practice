@@ -9,6 +9,7 @@ import { VerifyPanel } from '../components/Fairness';
 
 export default function FairnessPage(): JSX.Element {
   const [trials, setTrials] = useState(20000);
+  const [kind, setKind] = useState<'fair' | 'naive'>('fair');
   const [progress, setProgress] = useState<number | null>(null);
   const [result, setResult] = useState<PositionTestResult | null>(null);
   const [json, setJson] = useState('');
@@ -18,7 +19,7 @@ export default function FairnessPage(): JSX.Element {
   const run = async (): Promise<void> => {
     setProgress(0);
     setResult(null);
-    const r = await fairnessWorker.call('positionTest', { trials }, (p) => setProgress(p as number));
+    const r = await fairnessWorker.call('positionTest', { trials, kind }, (p) => setProgress(p as number));
     setResult(r);
     setProgress(null);
   };
@@ -35,15 +36,14 @@ export default function FairnessPage(): JSX.Element {
       <div className="grid xl:grid-cols-[1fr_380px] gap-6">
         <Panel
           title="Chi-squared position test"
-          actions={
-            <>
-              <Segmented size="sm" value={trials} onChange={setTrials} options={[{ value: 5000, label: '5k' }, { value: 20000, label: '20k' }, { value: 100000, label: '100k' }]} label="Number of shuffles" />
-              <Button variant="primary" size="sm" onClick={run} disabled={progress !== null}>
-                Run test
-              </Button>
-            </>
-          }
-        >
+>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <Segmented size="sm" value={kind} onChange={(v) => (setKind(v), setResult(null))} options={[{ value: 'fair', label: 'Production shuffle' }, { value: 'naive', label: 'Biased naive shuffle', title: 'Swap each position with any position: a classic bug' }]} label="Shuffle to test" />
+            <Segmented size="sm" value={trials} onChange={setTrials} options={[{ value: 5000, label: '5k' }, { value: 20000, label: '20k' }, { value: 100000, label: '100k' }]} label="Number of shuffles" />
+            <Button variant="primary" size="sm" onClick={run} disabled={progress !== null}>
+              Run test
+            </Button>
+          </div>
           <div className="prose-math mb-4">
             <p>
               Shuffle {trials.toLocaleString()} decks with fresh random seeds and count how often each card lands in each position. A uniform shuffle puts card <em>c</em> at position <em>p</em> with probability 1/52, so each cell expects <em>E</em> = T/52.
@@ -52,6 +52,7 @@ export default function FairnessPage(): JSX.Element {
               X² = Σ<sub>c,p</sub> (O<sub>cp</sub> − E)² / E, with (52 − 1)² = 2601 degrees of freedom
             </div>
             <p>Row and column totals are fixed at T, which removes 2·52 − 1 constraints from the 52² cells. Under uniformity X² ≈ 2601 ± 72, and the p-value is uniform on (0, 1).</p>
+            <p>To see that the test has teeth, switch to the biased naive shuffle (swap each position with <em>any</em> position). It has 52⁵² equally likely paths, which cannot spread evenly over 52! orders, and the test rejects it decisively.</p>
           </div>
           {progress !== null && <ProgressBar value={progress} className="mb-4" />}
           {result && (

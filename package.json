@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify-hand": "node scripts/verify-hand.mjs"
   },
   "dependencies": {
     "@fontsource-variable/source-serif-4": "5.2.9",

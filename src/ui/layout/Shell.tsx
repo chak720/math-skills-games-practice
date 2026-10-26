@@ -60,15 +60,32 @@ export function Shell({ children, wide }: { children: ReactNode; wide?: boolean 
   const { path } = useRoute();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
+  // Page title follows the route, so history and screen readers name the page.
+  useEffect(() => {
+    const root = `/${path.split('/')[1] ?? ''}`;
+    const name = root === '/' ? 'Today' : (SECTIONS.find((s) => s.path === root)?.title ?? (root === '/fairness' ? 'Fairness lab' : root === '/settings' ? 'Settings' : ''));
+    document.title = name ? `${name} · Quant Trainer` : 'Quant Trainer';
+  }, [path]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
   return (
     <div className="min-h-screen flex">
+      <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById('main')?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-ink-raised focus:text-paper focus:px-3 focus:py-2 focus:rounded">
+        Skip to content
+      </a>
       <aside className="hidden lg:flex flex-col w-60 shrink-0 border-r border-ink-line bg-ink sticky top-0 h-screen overflow-y-auto">
         <Wordmark />
         <Nav path={path} />
       </aside>
       {open && (
         <div className="lg:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setOpen(false)}>
-          <aside className="w-64 h-full bg-ink border-r border-ink-line overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <aside role="dialog" aria-modal="true" aria-label="Navigation" className="w-64 h-full bg-ink border-r border-ink-line overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <Wordmark />
             <Nav path={path} onNavigate={() => setOpen(false)} />
           </aside>
@@ -81,7 +98,9 @@ export function Shell({ children, wide }: { children: ReactNode; wide?: boolean 
           </button>
           <span className="font-semibold">Quant Trainer</span>
         </header>
-        <main className={cx('flex-1 w-full mx-auto px-4 sm:px-6 py-6', wide ? 'max-w-[1500px]' : 'max-w-[1200px]')}>{children}</main>
+        <main id="main" tabIndex={-1} className={cx('flex-1 w-full mx-auto px-4 sm:px-6 py-6 focus:outline-none', wide ? 'max-w-[1500px]' : 'max-w-[1200px]')}>
+          {children}
+        </main>
       </div>
     </div>
   );

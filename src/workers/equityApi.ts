@@ -23,25 +23,26 @@ export const equityApi = {
   variance(args: { winrate: number; sd: number; hands: number; paths: number }) {
     const rng = new Rng();
     const step = Math.max(1, Math.floor(args.hands / 200));
-    const points = Math.floor(args.hands / step) + 1;
+    const points = Math.floor(args.hands / step) + 1; // checkpoints at 0, step, 2·step, …
     const cols: number[][] = Array.from({ length: points }, () => []);
     const finals: number[] = [];
     const maxDowns: number[] = [];
     const sample: number[][] = [];
     const mu = args.winrate / 100;
     const sigma = args.sd / 10;
+    // Results over a block of `step` hands are Normal(step·μ, √step·σ), so simulate block by block
+    // (drawdowns are measured at block resolution, which understates them very slightly).
+    const blockSd = sigma * Math.sqrt(step);
     for (let p = 0; p < args.paths; p++) {
       let x = 0, peak = 0, maxDown = 0;
       const path: number[] = [0];
       cols[0].push(0);
-      for (let h = 1; h <= args.hands; h++) {
-        x += rng.normal(mu, sigma);
+      for (let k = 1; k < points; k++) {
+        x += rng.normal(mu * step, blockSd);
         peak = Math.max(peak, x);
         maxDown = Math.max(maxDown, peak - x);
-        if (h % step === 0) {
-          cols[h / step].push(x);
-          if (p < 8) path.push(x);
-        }
+        cols[k].push(x);
+        if (p < 8) path.push(x);
       }
       finals.push(x);
       maxDowns.push(maxDown);

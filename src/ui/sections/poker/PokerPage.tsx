@@ -5,6 +5,8 @@ import { PlayPage } from './PlayView';
 import { CoachView } from './CoachView';
 import { ReviewView } from './ReviewView';
 import { EquityCalc } from './EquityCalc';
+import { DrillsView } from './DrillsView';
+import { LearnView } from './LearnView';
 
 const TABS = [
   { value: 'play', label: 'Play' },
@@ -15,8 +17,6 @@ const TABS = [
   { value: 'drills', label: 'Drills' },
 ] as const;
 type Tab = (typeof TABS)[number]['value'];
-
-const Pending = ({ what }: { what: string }): JSX.Element => <p className="text-paper-muted">{what} arrives in the next build phase.</p>;
 
 export default function PokerPage(): JSX.Element {
   const { segments } = useRoute();
@@ -32,8 +32,8 @@ export default function PokerPage(): JSX.Element {
         {tab === 'coach' && <CoachView />}
         {tab === 'review' && <ReviewView />}
         {tab === 'equity' && <EquityCalc />}
-        {tab === 'learn' && <Pending what="Lessons" />}
-        {tab === 'drills' && <Pending what="Drills" />}
+        {tab === 'learn' && <LearnView />}
+        {tab === 'drills' && <DrillsView />}
       </Suspense>
     </div>
   );
