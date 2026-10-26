@@ -105,11 +105,7 @@ export function LineChart({
   const [hover, setHover] = useState<number | null>(null);
   const n = Math.max(0, ...series.map((s) => s.values.length));
   const xs = x ?? Array.from({ length: n }, (_, i) => i);
-  const m = { l: 44, r: 12, t: 8, b: xLabel ? 34 : 22 };
-  const iw = width - m.l - m.r;
-  const ih = height - m.t - m.b;
-
-  const { ticks, sy, sx } = useMemo(() => {
+  const { ticks, a, b } = useMemo(() => {
     let lo = Infinity, hi = -Infinity;
     for (const s of series) for (const v of s.values) if (Number.isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
     if (band) for (let i = 0; i < band.lo.length; i++) { lo = Math.min(lo, band.lo[i]); hi = Math.max(hi, band.hi[i]); }
@@ -119,14 +115,15 @@ export function LineChart({
     if (yMax !== undefined) hi = yMax;
     if (!Number.isFinite(lo)) { lo = 0; hi = 1; }
     const t = niceTicks(lo, hi);
-    const a = Math.min(t[0], lo), b = Math.max(t[t.length - 1], hi);
-    const x0 = xs[0] ?? 0, x1 = xs[xs.length - 1] ?? 1;
-    return {
-      ticks: t,
-      sy: (v: number) => m.t + ih - ((v - a) / (b - a || 1)) * ih,
-      sx: (v: number) => m.l + ((v - x0) / (x1 - x0 || 1)) * iw,
-    };
-  }, [series, band, markers, zeroLine, yMin, yMax, xs, ih, iw, m.t, m.l]);
+    return { ticks: t, a: Math.min(t[0], lo), b: Math.max(t[t.length - 1], hi) };
+  }, [series, band, markers, zeroLine, yMin, yMax]);
+  // Left margin fits the longest y tick label (≈6.5px per character at 11px).
+  const m = { l: Math.max(36, 12 + 6.5 * Math.max(...ticks.map((t) => yFormat(t).length))), r: 12, t: 8, b: xLabel ? 34 : 22 };
+  const iw = width - m.l - m.r;
+  const ih = height - m.t - m.b;
+  const x0 = xs[0] ?? 0, x1 = xs[xs.length - 1] ?? 1;
+  const sy = (v: number): number => m.t + ih - ((v - a) / (b - a || 1)) * ih;
+  const sx = (v: number): number => m.l + ((v - x0) / (x1 - x0 || 1)) * iw;
 
   const path = (vals: number[]): string => {
     let d = '';

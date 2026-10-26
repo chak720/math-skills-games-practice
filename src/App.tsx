@@ -11,6 +11,10 @@ const Poker = lazy(() => import('./ui/sections/poker/PokerPage'));
 const Blackjack = lazy(() => import('./ui/sections/blackjack/BlackjackPage'));
 const Maths = lazy(() => import('./ui/sections/maths/MathsPage'));
 const Puzzles = lazy(() => import('./ui/sections/puzzles/PuzzlesPage'));
+const Sequences = lazy(() => import('./ui/sections/sequences/SequencesPage'));
+const Fermi = lazy(() => import('./ui/sections/fermi/FermiPage'));
+const Betting = lazy(() => import('./ui/sections/betting/BettingPage'));
+const Market = lazy(() => import('./ui/sections/market/MarketPage'));
 
 /** Pages that want the full width (card tables). */
 const WIDE = ['/poker', '/blackjack'];
@@ -40,6 +44,18 @@ export default function App(): JSX.Element {
       break;
     case '/puzzles':
       page = <Puzzles />;
+      break;
+    case '/sequences':
+      page = <Sequences />;
+      break;
+    case '/fermi':
+      page = <Fermi />;
+      break;
+    case '/betting':
+      page = <Betting />;
+      break;
+    case '/market':
+      page = <Market />;
       break;
     default: {
       const s = SECTIONS.find((x) => x.path === root);
