@@ -31,3 +31,10 @@ export const bjWorker = new WorkerClient<BjApi>(
   () => new Worker(new URL('./bj.worker.ts', import.meta.url), { type: 'module' }),
   () => import('./bjApi').then((m) => m.bjApi),
 );
+
+import type { PuzzleApi } from './puzzleApi';
+
+export const puzzleWorker = new WorkerClient<PuzzleApi>(
+  () => new Worker(new URL('./puzzle.worker.ts', import.meta.url), { type: 'module' }),
+  () => import('./puzzleApi').then((m) => m.puzzleApi),
+);

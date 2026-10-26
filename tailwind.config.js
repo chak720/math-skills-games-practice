@@ -44,8 +44,9 @@ export default {
       keyframes: {
         deal: { from: { transform: 'translateY(-12px) scale(.96)', opacity: '0' }, to: { transform: 'none', opacity: '1' } },
         pop: { '0%': { transform: 'scale(.9)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+        shake: { '0%, 100%': { transform: 'none' }, '25%': { transform: 'translateX(-5px)' }, '75%': { transform: 'translateX(5px)' } },
       },
-      animation: { deal: 'deal .22s ease-out both', pop: 'pop .16s ease-out both' },
+      animation: { deal: 'deal .22s ease-out both', pop: 'pop .16s ease-out both', shake: 'shake .3s ease-in-out' },
     },
   },
   plugins: [],
