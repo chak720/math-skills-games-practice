@@ -8,6 +8,7 @@ const Home = lazy(() => import('./ui/pages/Home'));
 const Fairness = lazy(() => import('./ui/pages/Fairness'));
 const Settings = lazy(() => import('./ui/pages/Settings'));
 const Poker = lazy(() => import('./ui/sections/poker/PokerPage'));
+const Blackjack = lazy(() => import('./ui/sections/blackjack/BlackjackPage'));
 
 /** Pages that want the full width (card tables). */
 const WIDE = ['/poker', '/blackjack'];
@@ -28,6 +29,9 @@ export default function App(): JSX.Element {
       break;
     case '/poker':
       page = <Poker />;
+      break;
+    case '/blackjack':
+      page = <Blackjack />;
       break;
     default: {
       const s = SECTIONS.find((x) => x.path === root);

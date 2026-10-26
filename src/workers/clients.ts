@@ -24,3 +24,10 @@ export const equityWorker = new WorkerClient<EquityApi>(
   () => new Worker(new URL('./equity.worker.ts', import.meta.url), { type: 'module' }),
   () => import('./equityApi').then((m) => m.equityApi),
 );
+
+import type { BjApi } from './bjApi';
+
+export const bjWorker = new WorkerClient<BjApi>(
+  () => new Worker(new URL('./bj.worker.ts', import.meta.url), { type: 'module' }),
+  () => import('./bjApi').then((m) => m.bjApi),
+);
