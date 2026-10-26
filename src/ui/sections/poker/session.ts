@@ -72,6 +72,7 @@ export interface StoredHand {
   names: Record<number, { name: string; archetype?: Archetype; isHuman: boolean }>;
   record: HandRecord;
   heroNetBB: number;
+  maxSeats?: number;
   /** Coach mistake notes attached in coach mode (Phase 4). */
   coach?: unknown[];
 }
@@ -391,6 +392,7 @@ export class PokerSession {
         names: Object.fromEntries(record.history.players.map((p) => [p.seat, { name: this.meta[p.seat]!.name, archetype: this.meta[p.seat]!.archetype, isHuman: this.meta[p.seat]!.isHuman }])),
         record,
         heroNetBB: net,
+        maxSeats: this.config.maxSeats,
       };
       this.lastStored = stored;
       this.onHandStored?.(stored);
@@ -448,6 +450,11 @@ export class PokerSession {
   }
 
   // ------------------------------------------------------------ hero controls
+
+  /** Key of the current hand, matching StoredHand.id. */
+  get handKey(): string {
+    return `${this.sessionId}-${this.table.handNo}`;
+  }
 
   heroAct(a: PlayerAction): void {
     this.heroResolve?.(a);

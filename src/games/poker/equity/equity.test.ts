@@ -46,3 +46,28 @@ describe('equity', () => {
     expect(Math.abs(mc.equity - 0.735)).toBeLessThan(0.012);
   });
 });
+
+import { multiEquity } from './multi';
+import { parseRange as pr } from '../ranges/combos';
+
+describe('multi-player equity', () => {
+  it('exact hand vs hand on the flop matches equityExact', () => {
+    const r = multiEquity([{ kind: 'hand', cards: parseCards('Jh Th') }, { kind: 'hand', cards: parseCards('As Ad') }], parseCards('9h 8c 2h'));
+    expect(r.exact).toBe(true);
+    const ex = equityExact(parseCards('Jh Th'), parseCards('9h 8c 2h'), single('As Ad'));
+    expect(r.players[0].equity).toBeCloseTo(ex.equity, 10);
+    expect(r.players[0].equity + r.players[1].equity).toBeCloseTo(1, 10);
+  });
+  it('range vs range MC is symmetric-ish and sums to 1', () => {
+    const w = Array.from(pr('QQ+, AKs'));
+    const r = multiEquity([{ kind: 'range', classW: w }, { kind: 'range', classW: w }], [], [], 20000, 1);
+    expect(r.players[0].equity + r.players[1].equity).toBeCloseTo(1, 6);
+    expect(Math.abs(r.players[0].equity - 0.5)).toBeLessThan(4 * r.players[0].se + 0.005);
+  });
+  it('three-way exact on the turn', () => {
+    const r = multiEquity([{ kind: 'hand', cards: parseCards('Ah Kh') }, { kind: 'hand', cards: parseCards('Qc Qd') }, { kind: 'hand', cards: parseCards('9s 8s') }], parseCards('2h 7h Ts Js'));
+    expect(r.exact).toBe(true);
+    expect(r.n).toBe(52 - 6 - 4); // every possible river
+    expect(r.players.reduce((a, p) => a + p.equity, 0)).toBeCloseTo(1, 10);
+  });
+});

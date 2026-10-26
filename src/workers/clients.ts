@@ -17,3 +17,10 @@ export const botsWorker = new WorkerClient<BotsApi>(
   () => new Worker(new URL('./bots.worker.ts', import.meta.url), { type: 'module' }),
   () => import('./botsApi').then((m) => m.botsApi),
 );
+
+import type { EquityApi } from './equityApi';
+
+export const equityWorker = new WorkerClient<EquityApi>(
+  () => new Worker(new URL('./equity.worker.ts', import.meta.url), { type: 'module' }),
+  () => import('./equityApi').then((m) => m.equityApi),
+);

@@ -5,7 +5,7 @@ import { hudLine } from '@/games/poker/analysis/stats';
 import { bestFive, evaluate } from '@/games/poker/eval/evaluator';
 import { PlayingCard } from '../../components/PlayingCard';
 import { cx } from '../../components/core';
-import type { Snapshot } from './session';
+import type { SeatMeta, Snapshot } from './session';
 import { fmtAmt } from './format';
 import { NOTE_COLORS, useNotes } from './notes';
 
@@ -20,26 +20,47 @@ function seatPos(i: number, n: number, rx: number, ry: number): { x: number; y: 
   return { x: 50 + rx * Math.cos(a), y: 50 + ry * Math.sin(a) };
 }
 
-export function TableView({
-  snap,
-  showBB,
-  hud,
-  onSeatClick,
-  compact,
-}: {
-  snap: Snapshot;
-  showBB: boolean;
-  hud: boolean;
-  onSeatClick: (seat: number) => void;
-  compact: boolean;
-}): JSX.Element {
-  const { view, seats, config } = snap;
-  const n = config.maxSeats;
+/** Everything the felt needs to draw one moment of a hand. */
+export interface TableModel {
+  view: PlayerView | null;
+  seats: ({ meta: SeatMeta; stack: number } | null)[];
+  maxSeats: number;
+  bb: number;
+  showLabels: boolean;
+  heroSeat: number;
+  thinking: number | null;
+  bubbles: Record<number, string>;
+  chatBubbles: Record<number, string>;
+  /** HUD text per playerId (optional). */
+  hud?: (playerId: string) => string | undefined;
+  /** Review: show every hole card, folded ones dimmed. */
+  revealAll?: boolean;
+}
+
+export function modelFromSnapshot(snap: Snapshot, hud: boolean): TableModel {
+  return {
+    view: snap.view,
+    seats: snap.seats,
+    maxSeats: snap.config.maxSeats,
+    bb: snap.config.bb,
+    showLabels: snap.config.difficulty === 'easy',
+    heroSeat: snap.heroSeat,
+    thinking: snap.thinking,
+    bubbles: snap.bubbles,
+    chatBubbles: snap.chatBubbles,
+    hud: hud ? (id) => hudSummary(snap, id) : undefined,
+  };
+}
+
+export function TableView({ model, showBB, onSeatClick, compact }: { model: TableModel; showBB: boolean; onSeatClick?: (seat: number) => void; compact: boolean }): JSX.Element {
+  const { view, seats } = model;
+  const n = model.maxSeats;
   const [notes] = useNotes();
-  const bb = config.bb;
+  const bb = model.bb;
   const handOver = view?.handOver ?? false;
   const winners = new Set((view?.winners ?? []).map((w) => w.seat));
-  const heroBest = view?.hole && view.board.length >= 3 ? new Set(bestFive([...view.hole, ...view.board])) : null;
+  const heroHole = view?.hole ?? view?.seats.find((s) => s.seat === model.heroSeat)?.shown ?? null;
+  const heroBest = heroHole && view && view.board.length >= 3 ? new Set(bestFive([...heroHole, ...view.board])) : null;
   const rx = compact ? 40 : 44, ry = compact ? 41 : 39;
 
   return (
@@ -66,7 +87,7 @@ export function TableView({
         </div>
         <div className="flex gap-1.5 min-h-[56px] md:min-h-[76px]">
           {view?.board.map((c) => (
-            <PlayingCard key={`${view.handId}-${c}`} card={c} size={compact ? 'sm' : 'md'} animate highlight={handOver && !!heroBest?.has(c) && winners.has(snap.heroSeat)} />
+            <PlayingCard key={`${view.handId}-${c}`} card={c} size={compact ? 'sm' : 'md'} animate highlight={handOver && !!heroBest?.has(c) && winners.has(model.heroSeat)} />
           ))}
         </div>
       </div>
@@ -83,7 +104,7 @@ export function TableView({
             </div>
           );
         }
-        const isHero = i === snap.heroSeat;
+        const isHero = i === model.heroSeat;
         const note = notes[st.meta.name];
         // The hero's cards sit between the seat and the centre, so their bet goes further in.
         const betPos = isHero ? { x: 50 + rx * 0.3, y: 50 + ry * 0.3 } : seatPos(i, n, rx * 0.62, ry * 0.58);
@@ -100,19 +121,20 @@ export function TableView({
               sv={sv}
               hole={isHero ? view?.hole ?? null : null}
               isHero={isHero}
-              thinking={snap.thinking === i}
+              thinking={model.thinking === i}
               button={view?.button === i}
-              bubble={snap.bubbles[i]}
-              chat={snap.chatBubbles[i]}
+              bubble={model.bubbles[i]}
+              chat={model.chatBubbles[i]}
               winner={handOver && winners.has(i)}
-              label={config.difficulty === 'easy' && st.meta.archetype ? ARCHETYPE_LABEL[st.meta.archetype] : undefined}
+              label={model.showLabels && st.meta.archetype ? ARCHETYPE_LABEL[st.meta.archetype] : undefined}
               noteColor={note?.color ? NOTE_COLORS[note.color] : undefined}
-              hudText={hud && !isHero ? hudSummary(snap, st.meta.playerId) : undefined}
-              onClick={() => onSeatClick(i)}
+              hudText={!isHero ? model.hud?.(st.meta.playerId) : undefined}
+              onClick={() => onSeatClick?.(i)}
               compact={compact}
               highlightCards={isHero && heroBest && handOver ? heroBest : null}
               handId={view?.handId ?? 0}
               handOver={handOver}
+              revealAll={!!model.revealAll}
             />
             {sv && sv.betStreet > 0 && !handOver && (
               <div className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-white num" style={{ left: `${betPos.x}%`, top: `${betPos.y}%` }}>
@@ -167,6 +189,7 @@ function Seat(props: {
   highlightCards: Set<Card> | null;
   handId: number;
   handOver: boolean;
+  revealAll: boolean;
 }): JSX.Element {
   const { sv } = props;
   const folded = sv?.folded ?? false;
@@ -183,8 +206,8 @@ function Seat(props: {
       )}
       {/* Cards */}
       <div className={cx('flex -mb-2', props.isHero ? 'gap-1' : '-space-x-3')} style={{ minHeight: props.isHero ? undefined : 20 }}>
-        {inHand && !folded && (props.hole || shown)
-          ? (props.hole ?? shown!).map((c) => <PlayingCard key={`${props.handId}-${c}`} card={c} size={cardSize} animate highlight={!!props.highlightCards?.has(c)} />)
+        {inHand && (!folded || props.revealAll) && (props.hole || shown)
+          ? (props.hole ?? shown!).map((c) => <PlayingCard key={`${props.handId}-${c}`} card={c} size={cardSize} animate={!props.revealAll} dim={folded} highlight={!!props.highlightCards?.has(c)} />)
           : inHand && !folded && !sv?.mucked
             ? [0, 1].map((k) => <PlayingCard key={`${props.handId}-b${k}`} faceDown size={cardSize} animate />)
             : null}

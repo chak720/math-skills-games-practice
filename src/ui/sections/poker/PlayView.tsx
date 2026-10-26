@@ -9,8 +9,13 @@ import { useSettings } from '../../useSettings';
 import { ActionBar } from './ActionBar';
 import { NOTE_COLORS, type NoteColor, useNotes } from './notes';
 import { type Mode, type SessionConfig, type StoredHand, getSession } from './session';
+
+export function PlayPage(): JSX.Element {
+  const ctx = usePokerSession('play');
+  return <PlayView ctx={ctx} />;
+}
 import { SidePanel } from './SidePanel';
-import { TableView } from './TableView';
+import { modelFromSnapshot, TableView } from './TableView';
 
 export function usePokerSession(mode: Mode) {
   const session = getSession(mode);
@@ -38,17 +43,18 @@ function useCompact(): boolean {
 }
 
 export function PlayView({
-  mode,
+  ctx,
   coach,
   beforeAct,
+  blockedMessage,
 }: {
-  mode: Mode;
+  ctx: ReturnType<typeof usePokerSession>;
+  blockedMessage?: string | null;
   /** Extra side-panel tab (coach). */
   coach?: { label: string; content: (ctx: ReturnType<typeof usePokerSession>) => ReactNode };
   /** Intercept the hero's action (coach quiz mode). Return false to block. */
   beforeAct?: () => boolean;
 }): JSX.Element {
-  const ctx = usePokerSession(mode);
   const { session, snap } = ctx;
   const [settings, setSettings] = useSettings();
   const [hud, setHud] = usePersistent('poker.hud', false);
@@ -87,7 +93,7 @@ export function PlayView({
             </Button>
           </div>
         </div>
-        <TableView snap={snap} showBB={settings.showBB} hud={hud} onSeatClick={(s) => s !== snap.heroSeat && setNotesSeat(s)} compact={compact} />
+        <TableView model={modelFromSnapshot(snap, hud)} showBB={settings.showBB} onSeatClick={(s) => s !== snap.heroSeat && setNotesSeat(s)} compact={compact} />
         {snap.status === 'busted' ? (
           <div className="flex flex-col items-center gap-3 pt-10 pb-6">
             <p>You're out of chips.</p>
@@ -113,6 +119,8 @@ export function PlayView({
             )}
           </div>
         ) : (
+          <>
+          {blockedMessage && <p className="text-center text-sm text-signal pt-3">{blockedMessage}</p>}
           <ActionBar
             view={snap.view}
             active={snap.status === 'hero-turn'}
@@ -122,6 +130,7 @@ export function PlayView({
               session.heroAct(a);
             }}
           />
+          </>
         )}
       </div>
       <SidePanel
