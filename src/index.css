@@ -1,0 +1,64 @@
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/ibm-plex-sans/greek-400.css';
+
+/* Source Serif 4 (variable weight): latin, latin-ext and greek only — Greek
+   letters (σ, μ, Δ) appear throughout the maths exposition. */
+@font-face {
+  font-family: 'Source Serif 4 Variable'; font-style: normal; font-display: swap; font-weight: 200 900;
+  src: url('../node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Source Serif 4 Variable'; font-style: normal; font-display: swap; font-weight: 200 900;
+  src: url('../node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Source Serif 4 Variable'; font-style: normal; font-display: swap; font-weight: 200 900;
+  src: url('../node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-greek-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { color-scheme: dark; }
+  body {
+    @apply bg-ink text-paper font-sans text-base antialiased;
+    font-feature-settings: 'tnum' 1; /* tabular figures everywhere: columns of numbers align */
+  }
+  h1, h2, h3, h4 { @apply font-semibold tracking-[-0.01em]; }
+  :focus-visible { outline: 2px solid theme('colors.signal.DEFAULT'); outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: theme('colors.signal.deep'); color: #fff; }
+  input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type='number'] { -moz-appearance: textfield; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  }
+}
+
+@layer components {
+  .panel { @apply bg-ink-panel border border-ink-line rounded-lg; }
+  .input {
+    @apply bg-ink border border-ink-line rounded px-3 py-2 text-paper placeholder:text-paper-dim
+      focus:border-signal focus:outline-none transition-colors;
+  }
+  .label { @apply block text-sm text-paper-muted mb-1; }
+  .num { font-variant-numeric: tabular-nums; }
+  .prose-math { @apply font-serif text-[17px] leading-[1.65] text-paper max-w-[68ch]; }
+  .prose-math p { @apply my-3; }
+  .prose-math h3 { @apply font-sans text-md mt-6 mb-2; }
+  .prose-math ul { @apply list-disc pl-6 my-3; }
+  .prose-math ol { @apply list-decimal pl-6 my-3; }
+  .prose-math li { @apply my-1; }
+  .prose-math strong { @apply font-semibold text-paper; }
+  .prose-math code { @apply font-mono text-[14px] bg-ink-raised px-1 rounded-sm; }
+  .formula { @apply font-serif text-[18px] my-3 px-4 py-2 border-l-2 border-signal/60 bg-ink-raised/60 rounded-r overflow-x-auto; }
+  .felt {
+    background: radial-gradient(ellipse at 50% 42%, theme('colors.felt.glow') 0%, theme('colors.felt.DEFAULT') 45%, theme('colors.felt.edge') 100%);
+  }
+}
