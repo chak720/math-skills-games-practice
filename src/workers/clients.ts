@@ -9,3 +9,11 @@ export const fairnessWorker = new WorkerClient<FairnessApi>(
   () => new Worker(new URL('./fairness.worker.ts', import.meta.url), { type: 'module' }),
   () => import('./fairnessApi').then((m) => m.fairnessApi),
 );
+
+import type { BotsApi } from './botsApi';
+
+/** Bots run in their own worker: they can only ever see the views we post them. */
+export const botsWorker = new WorkerClient<BotsApi>(
+  () => new Worker(new URL('./bots.worker.ts', import.meta.url), { type: 'module' }),
+  () => import('./botsApi').then((m) => m.botsApi),
+);
