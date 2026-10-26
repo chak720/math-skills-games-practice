@@ -15,6 +15,8 @@ const Sequences = lazy(() => import('./ui/sections/sequences/SequencesPage'));
 const Fermi = lazy(() => import('./ui/sections/fermi/FermiPage'));
 const Betting = lazy(() => import('./ui/sections/betting/BettingPage'));
 const Market = lazy(() => import('./ui/sections/market/MarketPage'));
+const Interview = lazy(() => import('./ui/sections/interview/InterviewPage'));
+const Progress = lazy(() => import('./ui/pages/Progress'));
 
 /** Pages that want the full width (card tables). */
 const WIDE = ['/poker', '/blackjack'];
@@ -56,6 +58,12 @@ export default function App(): JSX.Element {
       break;
     case '/market':
       page = <Market />;
+      break;
+    case '/interview':
+      page = <Interview />;
+      break;
+    case '/progress':
+      page = <Progress />;
       break;
     default: {
       const s = SECTIONS.find((x) => x.path === root);
